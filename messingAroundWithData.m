@@ -12,6 +12,8 @@ alameda = readtable("alameda.csv");
 long_beach = readtable("south_long_beach.csv");
 tulare = readtable("tulare.csv");
 
+%% I put everything above in following table
+load exportstuff.mat
 
 pm25_san_joanquin=san_joanquin(:,1:2);%north
 pm25_santa_barbara=santa_barbara(:,1:2);%south
@@ -27,17 +29,11 @@ pm25_otay.date=datetime(otay.date,'InputFormat','yyyy/MM/dd');
 pm25_camp_pendleton.date=datetime(camp_pendleton.date,'InputFormat','yyyy/MM/dd');
 pm25_tulare.date=datetime(tulare.date,'InputFormat','yyyy/MM/dd');
 
-%pm25_alameda_array=table2array(pm25_alameda);
-%pm25_san_joanquin_array=table2array(pm25_san_joanquin);
+%EVERYTHING ABOVE IS IN EXPORTSTUFF.MAT
+%%
+%setting up combined data
 combined_dates = intersect(pm25_camp_pendleton.date,pm25_alameda.date);
 combined_data  = zeros(length(combined_dates),7);
-load weather_station_data.mat
-
-%%
-%find daily means for weather_station_data
-% Temperature Vector
-
-%% combine data
 
 for i = 1:length(combined_dates) 
 
@@ -79,17 +75,19 @@ for i = 1:length(combined_dates)
         combined_data(i,7) = NaN;
     end
 end
-%EVERYTHING ABOVE IS DONE FROM EXPORTSTUFF.MAT
+
 %%
+%finding the moving means
 movmeans  = zeros(length(combined_dates),2);
 movmeans(:,1)=(movmean(combined_data(:,2),3) + movmean(combined_data(:,3),3)) / 2;
 movmeans(:,2)=(movmean(combined_data(:,1),3) + movmean(combined_data(:,4),3) + movmean(combined_data(:,5),3) + movmean(combined_data(:,6),3)) / 4;
  %%
+ %linear regression for North and South
 mdl1 = fitlm(movmeans(:,1),combined_data(:,7));
 mdl2 = fitlm(movmeans(:,2),combined_data(:,7));
 
  %%
- 
+%Making scatterplots for the air quality and time
 plot(combined_dates,movmeans(:,1))
 hold on
 plot(combined_dates,movmeans(:,2),'r')
@@ -109,6 +107,7 @@ ylabel("Temperature")
 xlabel("Air Quality (pm25)")
 legend("North", "South")
 %%
+%Plotting air quality and temperature in North and South
 figure()
 plot(mdl1)
 title("Air Quality and Temperature(N)")
@@ -120,11 +119,8 @@ title("Air Quality and Temperature(S)")
 ylabel("Temperature")
 xlabel("Air Quality (pm25)")
 %%
-load exportstuff.mat
-%%
+%Modelling the temperature and time
 mdl3 = fitlm(datenum(time),temp);
-mdl3
-%%
 plot(mdl3)
 title("Temperature over Time")
 ylabel("Temperature")
